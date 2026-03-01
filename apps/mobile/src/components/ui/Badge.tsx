@@ -5,11 +5,11 @@ import type { Priority } from '@wishpal/shared';
 type BadgeVariant = 'default' | 'success' | 'warning' | 'danger' | 'info';
 
 const variantClasses: Record<BadgeVariant, string> = {
-  default: 'bg-surface',
-  success: 'bg-success/20',
-  warning: 'bg-warning/20',
-  danger: 'bg-danger/20',
-  info: 'bg-brand/20',
+  default: 'bg-white/5 border border-white/10',
+  success: 'bg-success/15 border border-success/20',
+  warning: 'bg-warning/15 border border-warning/20',
+  danger: 'bg-danger/15 border border-danger/20',
+  info: 'bg-brand/15 border border-brand/20',
 };
 
 const variantTextClasses: Record<BadgeVariant, string> = {
@@ -27,6 +27,13 @@ const priorityVariantMap: Record<Priority, BadgeVariant> = {
   urgent: 'danger',
 };
 
+const priorityLabels: Record<Priority, string> = {
+  low: 'Low',
+  medium: 'Medium',
+  high: 'High',
+  urgent: 'Urgent',
+};
+
 interface BadgeProps {
   label: string;
   variant?: BadgeVariant;
@@ -35,11 +42,12 @@ interface BadgeProps {
 
 export function Badge({ label, variant, priority }: BadgeProps) {
   const resolvedVariant = priority ? priorityVariantMap[priority] : variant || 'default';
+  const displayLabel = priority ? priorityLabels[priority] : label;
 
   return (
     <View className={`rounded-full px-3 py-1 ${variantClasses[resolvedVariant]}`}>
-      <WText variant="caption" className={`font-medium ${variantTextClasses[resolvedVariant]}`}>
-        {label}
+      <WText variant="caption" className={`font-semibold ${variantTextClasses[resolvedVariant]}`}>
+        {displayLabel}
       </WText>
     </View>
   );

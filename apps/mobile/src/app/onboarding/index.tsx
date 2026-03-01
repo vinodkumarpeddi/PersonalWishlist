@@ -4,38 +4,39 @@ import Animated, {
   useSharedValue,
   useAnimatedScrollHandler,
   useAnimatedStyle,
-  withSpring,
   interpolate,
 } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { OnboardingSlide, type SlideData } from '../../components/onboarding/OnboardingSlide';
 import { DotIndicator } from '../../components/onboarding/DotIndicator';
-import { WButton, WText } from '../../components/ui';
-import { AnimatedPressable } from '../../components/ui';
+import { WButton, WText, AnimatedPressable, GradientBackground } from '../../components/ui';
 import { useOnboardingStore } from '../../stores/onboarding-store';
 
 const slides: SlideData[] = [
   {
     emoji: '🛍️',
-    title: 'Save Products\nFrom Anywhere',
+    subtitle: 'SAVE ANYTHING',
+    title: 'Your Wishlist,\nAnywhere',
     description:
-      'Paste any shopping link and we\'ll automatically extract product details, images, and prices.',
-    gradient: 'bg-brand/20',
+      'Paste any shopping link — Amazon, Flipkart, Myntra or any store. We auto-extract every detail for you.',
+    accentColor: '#6C5CE7',
   },
   {
-    emoji: '📉',
-    title: 'Track Prices\nAutomatically',
+    emoji: '📊',
+    subtitle: 'SMART TRACKING',
+    title: 'Never Miss\na Price Drop',
     description:
-      'We check prices every 6 hours and show you the complete price history so you never miss a deal.',
-    gradient: 'bg-accent/20',
+      'We monitor prices every 6 hours and build a complete history. Buy at the perfect moment.',
+    accentColor: '#00D2D3',
   },
   {
-    emoji: '🔔',
-    title: 'Get Alerts\nInstantly',
+    emoji: '⚡',
+    subtitle: 'INSTANT ALERTS',
+    title: 'Set It,\nForget It',
     description:
-      'Set your target price and get notified the moment the price drops. Never overpay again.',
-    gradient: 'bg-success/20',
+      'Set your target price and relax. We\'ll notify you the instant it drops. Zero effort, max savings.',
+    accentColor: '#00B894',
   },
 ];
 
@@ -45,13 +46,11 @@ export default function OnboardingScreen() {
   const router = useRouter();
   const scrollX = useSharedValue(0);
   const scrollRef = useRef<Animated.FlatList<SlideData>>(null);
-  const currentIndex = useSharedValue(0);
   const completeOnboarding = useOnboardingStore((s) => s.completeOnboarding);
 
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
       scrollX.value = event.contentOffset.x;
-      currentIndex.value = Math.round(event.contentOffset.x / width);
     },
   });
 
@@ -69,19 +68,23 @@ export default function OnboardingScreen() {
     router.replace('/auth');
   };
 
-  const buttonAnimatedStyle = useAnimatedStyle(() => {
-    const isLast = scrollX.value >= (slides.length - 1.5) * width;
+  const buttonTextStyle = useAnimatedStyle(() => {
+    const isLast = scrollX.value >= (slides.length - 1.3) * width;
     return {
-      transform: [{ scale: withSpring(isLast ? 1 : 0.95) }],
+      opacity: interpolate(
+        scrollX.value,
+        [(slides.length - 1.5) * width, (slides.length - 1) * width],
+        [0, 1],
+      ),
     };
   });
 
   return (
-    <View className="flex-1 bg-surface-dark" style={{ paddingTop: insets.top }}>
-      {/* Skip button */}
-      <View className="flex-row justify-end px-6 py-4">
-        <AnimatedPressable onPress={handleGetStarted}>
-          <WText variant="bodySmall" className="text-muted-light">
+    <GradientBackground variant="brand" style={{ paddingTop: insets.top }}>
+      {/* Skip */}
+      <View className="flex-row justify-end px-6 pt-4 pb-2">
+        <AnimatedPressable onPress={handleGetStarted} className="px-4 py-2 rounded-full bg-white/5">
+          <WText variant="caption" className="text-muted-light font-medium">
             Skip
           </WText>
         </AnimatedPressable>
@@ -103,22 +106,11 @@ export default function OnboardingScreen() {
         )}
       />
 
-      {/* Bottom section */}
-      <View
-        className="px-8 gap-6 pb-4"
-        style={{ paddingBottom: insets.bottom + 16 }}
-      >
+      {/* Bottom */}
+      <View className="px-8 gap-7 pb-4" style={{ paddingBottom: insets.bottom + 20 }}>
         <DotIndicator count={slides.length} scrollX={scrollX} />
-
-        <Animated.View style={buttonAnimatedStyle}>
-          <WButton
-            title="Continue"
-            onPress={handleNext}
-            fullWidth
-            size="lg"
-          />
-        </Animated.View>
+        <WButton title="Continue" onPress={handleNext} fullWidth size="lg" />
       </View>
-    </View>
+    </GradientBackground>
   );
 }

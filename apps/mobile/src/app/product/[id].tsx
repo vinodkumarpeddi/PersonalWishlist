@@ -3,13 +3,13 @@ import { View, ScrollView, Linking, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
-import Animated, { FadeInDown } from 'react-native-reanimated';
-import { WText, WButton, WCard, PriceTag, Badge, AnimatedPressable, Skeleton } from '../../components/ui';
+import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
+import { WText, WButton, WCard, PriceTag, Badge, AnimatedPressable, Skeleton, GradientBackground } from '../../components/ui';
 import { PriceHistoryChart } from '../../components/product/PriceHistoryChart';
 import { apiClient } from '../../services/api-client';
 import { useWishlistStore } from '../../stores/wishlist-store';
-import { formatDate } from '@wishpal/shared';
-import type { WishlistItem, PriceHistory } from '@wishpal/shared';
+import { formatDate, extractDomain } from '@wishpal/shared';
+import type { WishlistItem, PriceHistory, Priority } from '@wishpal/shared';
 
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -67,121 +67,189 @@ export default function ProductDetailScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 bg-surface-dark p-4" style={{ paddingTop: insets.top }}>
-        <Skeleton height={300} borderRadius={16} />
-        <View className="mt-4 gap-3">
-          <Skeleton height={24} width="80%" />
-          <Skeleton height={20} width="50%" />
-          <Skeleton height={200} borderRadius={16} />
+      <GradientBackground style={{ paddingTop: insets.top }}>
+        <View className="px-5 pt-4">
+          <Skeleton height={300} borderRadius={24} />
+          <View className="mt-5 gap-3">
+            <Skeleton height={28} width="85%" borderRadius={8} />
+            <Skeleton height={20} width="50%" borderRadius={8} />
+            <Skeleton height={180} borderRadius={20} />
+          </View>
         </View>
-      </View>
+      </GradientBackground>
     );
   }
 
   const product = item?.product;
   if (!product) {
     return (
-      <View className="flex-1 bg-surface-dark items-center justify-center">
-        <WText variant="body">Product not found</WText>
-      </View>
+      <GradientBackground style={{ paddingTop: insets.top }}>
+        <View className="flex-1 items-center justify-center px-8">
+          <View className="w-20 h-20 rounded-full bg-white/5 items-center justify-center mb-4">
+            <WText style={{ fontSize: 36 }}>🔍</WText>
+          </View>
+          <WText variant="h3" className="text-center mb-2">Product Not Found</WText>
+          <WText variant="bodySmall" className="text-center text-muted mb-6">
+            This product may have been removed or the link is invalid.
+          </WText>
+          <WButton title="Go Back" onPress={() => router.back()} variant="secondary" />
+        </View>
+      </GradientBackground>
     );
   }
 
+  const domain = product.url ? extractDomain(product.url) : '';
+
   return (
-    <ScrollView
-      className="flex-1 bg-surface-dark"
-      contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
-    >
-      {/* Header */}
-      <View className="relative">
-        {product.imageUrl && (
-          <Image
-            source={{ uri: product.imageUrl }}
-            className="w-full h-80"
-            contentFit="contain"
-            style={{ backgroundColor: '#1A1A25' }}
-            transition={300}
-          />
-        )}
-        <View className="absolute top-0 left-0 right-0 flex-row justify-between p-4" style={{ paddingTop: insets.top }}>
-          <AnimatedPressable
-            onPress={() => router.back()}
-            className="bg-surface/80 rounded-full w-10 h-10 items-center justify-center"
-          >
-            <WText variant="body">←</WText>
-          </AnimatedPressable>
-        </View>
-      </View>
-
-      <View className="px-4 pt-4 gap-4">
-        {/* Title & Brand */}
-        <Animated.View entering={FadeInDown.delay(100)}>
-          <WText variant="h2">{product.title}</WText>
-          {product.brand && (
-            <WText variant="bodySmall" className="mt-1">
-              {product.brand}
-            </WText>
-          )}
-        </Animated.View>
-
-        {/* Price */}
-        <Animated.View entering={FadeInDown.delay(150)}>
-          <PriceTag
-            currentPricePaise={product.currentPricePaise}
-            originalPricePaise={product.originalPricePaise}
-            size="lg"
-          />
-        </Animated.View>
-
-        {/* Status badges */}
-        <Animated.View entering={FadeInDown.delay(200)} className="flex-row gap-2 flex-wrap">
-          {product.inStock ? (
-            <Badge label="In Stock" variant="success" />
-          ) : (
-            <Badge label="Out of Stock" variant="danger" />
-          )}
-          {product.rating && <Badge label={`${product.rating} ★`} variant="warning" />}
-          {product.reviewCount && (
-            <Badge label={`${product.reviewCount.toLocaleString()} reviews`} variant="default" />
-          )}
-          <Badge label={item!.priority} priority={item!.priority as any} />
-        </Animated.View>
-
-        {/* Price History Chart */}
-        <Animated.View entering={FadeInDown.delay(250)}>
-          <WCard>
-            <WText variant="h3" className="mb-3">
-              Price History
-            </WText>
-            <PriceHistoryChart data={priceHistory} />
-            {product.lastScrapedAt && (
-              <WText variant="caption" className="mt-2">
-                Last checked: {formatDate(product.lastScrapedAt)}
-              </WText>
+    <GradientBackground>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Image Header */}
+        <View className="relative">
+          <View className="bg-surface items-center justify-center" style={{ height: 320 }}>
+            {product.imageUrl ? (
+              <Image
+                source={{ uri: product.imageUrl }}
+                className="w-full h-full"
+                contentFit="contain"
+                style={{ backgroundColor: '#12121D' }}
+                transition={300}
+              />
+            ) : (
+              <View className="items-center">
+                <WText style={{ fontSize: 64 }}>📦</WText>
+              </View>
             )}
-          </WCard>
-        </Animated.View>
+          </View>
 
-        {/* Description */}
-        {product.description && (
-          <Animated.View entering={FadeInDown.delay(300)}>
-            <WCard>
-              <WText variant="label" className="mb-2">
-                Description
-              </WText>
-              <WText variant="bodySmall" numberOfLines={6}>
-                {product.description}
-              </WText>
+          {/* Floating back button */}
+          <View className="absolute top-0 left-0 right-0 flex-row justify-between px-4" style={{ paddingTop: insets.top + 8 }}>
+            <AnimatedPressable
+              onPress={() => router.back()}
+              className="w-10 h-10 rounded-2xl bg-surface-dark/80 border border-white/10 items-center justify-center"
+              style={{
+                // @ts-expect-error web shadow
+                backdropFilter: 'blur(10px)',
+              }}
+            >
+              <WText variant="body">←</WText>
+            </AnimatedPressable>
+          </View>
+
+          {/* Source badge */}
+          {domain && (
+            <View className="absolute bottom-3 right-3">
+              <Animated.View entering={FadeIn.delay(200)}>
+                <View className="px-3 py-1.5 rounded-xl bg-surface-dark/80 border border-white/10">
+                  <WText variant="caption" className="text-muted">{domain}</WText>
+                </View>
+              </Animated.View>
+            </View>
+          )}
+        </View>
+
+        <View className="px-5 pt-5 gap-4">
+          {/* Title & Brand */}
+          <Animated.View entering={FadeInDown.delay(100).springify()}>
+            <WText variant="h2" className="leading-tight">{product.title}</WText>
+            {product.brand && (
+              <WText variant="bodySmall" className="text-muted mt-1.5">{product.brand}</WText>
+            )}
+          </Animated.View>
+
+          {/* Price Section */}
+          <Animated.View entering={FadeInDown.delay(150).springify()}>
+            <WCard className="gap-2">
+              <WText variant="overline" className="text-muted mb-1">CURRENT PRICE</WText>
+              <PriceTag
+                currentPricePaise={product.currentPricePaise}
+                originalPricePaise={product.originalPricePaise}
+                size="lg"
+              />
             </WCard>
           </Animated.View>
-        )}
 
-        {/* Actions */}
-        <Animated.View entering={FadeInDown.delay(350)} className="gap-3">
-          <WButton title="Open in Browser" onPress={handleOpenUrl} variant="secondary" fullWidth />
-          <WButton title="Remove from Wishlist" onPress={handleDelete} variant="danger" fullWidth />
-        </Animated.View>
-      </View>
-    </ScrollView>
+          {/* Status Badges */}
+          <Animated.View entering={FadeInDown.delay(200).springify()} className="flex-row gap-2 flex-wrap">
+            {product.inStock ? (
+              <Badge label="In Stock" variant="success" />
+            ) : (
+              <Badge label="Out of Stock" variant="danger" />
+            )}
+            {product.rating && <Badge label={`${product.rating} ★`} variant="warning" />}
+            {product.reviewCount && (
+              <Badge label={`${product.reviewCount.toLocaleString()} reviews`} variant="default" />
+            )}
+            <Badge label={item!.priority} priority={item!.priority as Priority} />
+          </Animated.View>
+
+          {/* Price History Chart */}
+          <Animated.View entering={FadeInDown.delay(250).springify()}>
+            <WCard>
+              <View className="flex-row items-center gap-2 mb-4">
+                <View className="w-8 h-8 rounded-xl bg-brand/10 items-center justify-center">
+                  <WText style={{ fontSize: 14 }}>📈</WText>
+                </View>
+                <WText variant="h3">Price History</WText>
+              </View>
+              <PriceHistoryChart data={priceHistory} />
+              {product.lastScrapedAt && (
+                <View className="flex-row items-center gap-1.5 mt-3 pt-3 border-t border-white/5">
+                  <View className="w-1.5 h-1.5 rounded-full bg-success" />
+                  <WText variant="caption" className="text-muted">
+                    Last checked {formatDate(product.lastScrapedAt)}
+                  </WText>
+                </View>
+              )}
+            </WCard>
+          </Animated.View>
+
+          {/* Description */}
+          {product.description && (
+            <Animated.View entering={FadeInDown.delay(300).springify()}>
+              <WCard>
+                <View className="flex-row items-center gap-2 mb-3">
+                  <View className="w-8 h-8 rounded-xl bg-accent/10 items-center justify-center">
+                    <WText style={{ fontSize: 14 }}>📝</WText>
+                  </View>
+                  <WText variant="h3">Description</WText>
+                </View>
+                <WText variant="bodySmall" className="leading-6 text-muted" numberOfLines={8}>
+                  {product.description}
+                </WText>
+              </WCard>
+            </Animated.View>
+          )}
+
+          {/* Actions */}
+          <Animated.View entering={FadeInDown.delay(350).springify()} className="gap-3 mt-2">
+            <AnimatedPressable
+              onPress={handleOpenUrl}
+              className="w-full py-4 rounded-2xl bg-brand items-center justify-center"
+              style={{
+                // @ts-expect-error web shadow
+                boxShadow: '0 4px 20px rgba(108, 92, 231, 0.35)',
+              }}
+            >
+              <WText variant="body" className="text-white font-semibold tracking-wide">
+                Open in Browser
+              </WText>
+            </AnimatedPressable>
+
+            <AnimatedPressable
+              onPress={handleDelete}
+              className="w-full py-4 rounded-2xl bg-danger/10 border border-danger/20 items-center justify-center"
+            >
+              <WText variant="body" className="text-danger font-semibold tracking-wide">
+                Remove from Wishlist
+              </WText>
+            </AnimatedPressable>
+          </Animated.View>
+        </View>
+      </ScrollView>
+    </GradientBackground>
   );
 }

@@ -10,3 +10,4 @@ export { Skeleton, SkeletonCard } from './Skeleton';
 export { EmptyState } from './EmptyState';
 export { PriceTag } from './PriceTag';
 export { WBottomSheet } from './WBottomSheet';
+export { GradientBackground } from './GradientBackground';

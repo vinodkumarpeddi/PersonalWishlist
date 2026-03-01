@@ -14,22 +14,36 @@ export function WInput({ label, error, leftIcon, rightIcon, ...props }: WInputPr
   const [isFocused, setIsFocused] = useState(false);
 
   const borderStyle = useAnimatedStyle(() => ({
-    borderColor: withTiming(error ? '#FF6B6B' : isFocused ? '#6C5CE7' : '#1A1A25', {
-      duration: 200,
-    }),
+    borderColor: withTiming(
+      error ? '#FF6B6B' : isFocused ? '#6C5CE7' : 'rgba(255,255,255,0.06)',
+      { duration: 200 },
+    ),
   }));
 
   return (
-    <View className="gap-1.5">
-      {label && <WText variant="label">{label}</WText>}
+    <View className="gap-2">
+      {label && (
+        <WText variant="label" className="ml-1 uppercase tracking-widest text-xs">
+          {label}
+        </WText>
+      )}
       <Animated.View
-        style={borderStyle}
-        className="flex-row items-center rounded-xl border-2 bg-surface px-4"
+        style={[
+          borderStyle,
+          isFocused
+            ? {
+                // @ts-expect-error web shadow
+                boxShadow: '0 0 20px rgba(108, 92, 231, 0.15)',
+              }
+            : undefined,
+        ]}
+        className="flex-row items-center rounded-2xl border-2 bg-surface/90 px-4"
       >
         {leftIcon && <View className="mr-3">{leftIcon}</View>}
         <TextInput
-          className="flex-1 py-3.5 text-base text-white"
-          placeholderTextColor="#6B7280"
+          className="flex-1 py-4 text-base text-white"
+          placeholderTextColor="#4A4A5A"
+          selectionColor="#6C5CE7"
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           {...props}

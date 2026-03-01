@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, Platform } from 'react-native';
 import { useAuthStore } from '../stores/auth-store';
 import { useOnboardingStore } from '../stores/onboarding-store';
 
@@ -45,21 +45,53 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function MobileFrame({ children }: { children: React.ReactNode }) {
+  if (Platform.OS !== 'web') return <>{children}</>;
+
+  return (
+    <View
+      style={{
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#000000',
+      }}
+    >
+      <View
+        style={{
+          width: 390,
+          height: 844,
+          borderRadius: 40,
+          overflow: 'hidden',
+          borderWidth: 3,
+          borderColor: '#2A2A35',
+          // @ts-expect-error web-only shadow
+          boxShadow: '0 0 60px rgba(108, 92, 231, 0.3)',
+        }}
+      >
+        {children}
+      </View>
+    </View>
+  );
+}
+
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <View className="flex-1 bg-surface-dark">
-        <StatusBar style="light" />
-        <AuthGate>
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              contentStyle: { backgroundColor: '#0A0A0F' },
-              animation: 'slide_from_right',
-            }}
-          />
-        </AuthGate>
-      </View>
+      <MobileFrame>
+        <View className="flex-1 bg-surface-dark">
+          <StatusBar style="light" />
+          <AuthGate>
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: '#0A0A0F' },
+                animation: 'slide_from_right',
+              }}
+            />
+          </AuthGate>
+        </View>
+      </MobileFrame>
     </GestureHandlerRootView>
   );
 }

@@ -16,15 +16,19 @@ export function WishlistCard({ item, onPress, viewMode }: WishlistCardProps) {
   if (viewMode === 'grid') {
     return (
       <WCard onPress={onPress} noPadding className="flex-1 m-1.5 overflow-hidden">
-        {product?.imageUrl && (
-          <Image
-            source={{ uri: product.imageUrl }}
-            className="w-full h-36"
-            contentFit="cover"
-            transition={200}
-          />
-        )}
-        <View className="p-3 gap-1.5">
+        <View className="bg-surface items-center justify-center" style={{ height: 140 }}>
+          {product?.imageUrl ? (
+            <Image
+              source={{ uri: product.imageUrl }}
+              className="w-full h-full"
+              contentFit="cover"
+              transition={300}
+            />
+          ) : (
+            <WText style={{ fontSize: 32 }}>📦</WText>
+          )}
+        </View>
+        <View className="p-3.5 gap-2">
           <WText variant="bodySmall" className="text-white font-medium" numberOfLines={2}>
             {product?.title || 'Loading...'}
           </WText>
@@ -35,27 +39,28 @@ export function WishlistCard({ item, onPress, viewMode }: WishlistCardProps) {
               size="sm"
             />
           )}
-          <View className="flex-row items-center justify-between mt-1">
-            <Badge label={item.priority} priority={item.priority as Priority} />
-          </View>
+          <Badge label={item.priority} priority={item.priority as Priority} />
         </View>
       </WCard>
     );
   }
 
-  // List mode
   return (
-    <WCard onPress={onPress} className="flex-row gap-3 mb-3">
-      {product?.imageUrl && (
-        <Image
-          source={{ uri: product.imageUrl }}
-          className="w-20 h-20 rounded-xl"
-          contentFit="cover"
-          transition={200}
-        />
-      )}
-      <View className="flex-1 gap-1">
-        <WText variant="body" className="font-medium" numberOfLines={2}>
+    <WCard onPress={onPress} className="flex-row gap-4 mb-3 mx-5">
+      <View className="w-20 h-20 rounded-2xl bg-surface overflow-hidden items-center justify-center">
+        {product?.imageUrl ? (
+          <Image
+            source={{ uri: product.imageUrl }}
+            className="w-full h-full"
+            contentFit="cover"
+            transition={300}
+          />
+        ) : (
+          <WText style={{ fontSize: 28 }}>📦</WText>
+        )}
+      </View>
+      <View className="flex-1 gap-1.5 justify-center">
+        <WText variant="body" className="font-semibold" numberOfLines={2}>
           {product?.title || 'Loading...'}
         </WText>
         {product && (
@@ -65,7 +70,7 @@ export function WishlistCard({ item, onPress, viewMode }: WishlistCardProps) {
             size="sm"
           />
         )}
-        <View className="flex-row items-center gap-2 mt-auto">
+        <View className="flex-row items-center gap-2 mt-0.5">
           <Badge label={item.priority} priority={item.priority as Priority} />
           <WText variant="caption">{timeAgo(item.addedAt)}</WText>
         </View>
